@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply text-[13px] text-[#333] font-sans antialiased bg-white;
+  }
+}
+
+@layer utilities {
+  .jupyter-btn {
+    @apply px-3 py-1.5 text-sm border border-[#ccc] bg-white hover:bg-[#e6e6e6] hover:border-[#adadad] rounded shadow-sm text-[#333] transition-colors focus:outline-none focus:ring-1 focus:ring-jupyter-blue focus:border-jupyter-blue flex items-center justify-center gap-1;
+  }
+  .jupyter-btn-danger {
+    @apply px-3 py-1.5 text-sm border border-[#d43f3a] bg-[#d9534f] hover:bg-[#c9302c] hover:border-[#ac2925] text-white rounded shadow-sm transition-colors focus:outline-none;
+  }
+  .jupyter-btn-primary {
+    @apply px-3 py-1.5 text-sm border border-[#2e6da4] bg-[#337ab7] hover:bg-[#286090] hover:border-[#204d74] text-white rounded shadow-sm transition-colors focus:outline-none;
+  }
+}
