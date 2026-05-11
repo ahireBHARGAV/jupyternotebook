@@ -19,5 +19,4 @@ yarn-debug.log*
 yarn-error.log*
 
 # project specific
-uploads/
-public/files/
+# (uploads and public/files are now tracked)

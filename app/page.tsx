@@ -12,51 +12,12 @@ interface FileItem {
 }
 
 export default function Home() {
-  const [files, setFiles] = useState<FileItem[]>([]);
+  const [files] = useState<FileItem[]>([
+    { name: "DSBDA_Assignment2_Perfect.ipynb", size: 40725, modified: Date.now() - 3600000 * 2, type: ".ipynb" },
+    { name: "ass1.ipynb", size: 17294, modified: Date.now() - 3600000 * 5, type: ".ipynb" },
+    { name: "plotHEART.ipynb", size: 1164768, modified: Date.now() - 3600000 * 24, type: ".ipynb" },
+  ]);
   const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set());
-  const [isLoading, setIsLoading] = useState(true);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const fetchFiles = async () => {
-    setIsLoading(true);
-    try {
-      const res = await fetch("/api/files");
-      const data = await res.json();
-      setFiles(data.files || []);
-      setSelectedFiles(new Set());
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchFiles();
-  }, []);
-
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const formData = new FormData();
-    formData.append("file", file);
-
-    try {
-      await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      });
-      fetchFiles();
-    } catch (error) {
-      console.error("Upload failed", error);
-    }
-    
-    // Reset input
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  };
 
   const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.checked) {
@@ -78,7 +39,12 @@ export default function Home() {
 
   const handleDownload = () => {
     selectedFiles.forEach(name => {
-      window.open(`/api/download?file=${encodeURIComponent(name)}`, "_blank");
+      const link = document.createElement('a');
+      link.href = `/files/${encodeURIComponent(name)}`;
+      link.download = name;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     });
   };
 
@@ -89,7 +55,7 @@ export default function Home() {
     }
     const filename = Array.from(selectedFiles)[0];
     try {
-      const res = await fetch(`/api/content?file=${encodeURIComponent(filename)}`);
+      const res = await fetch(`/files/${encodeURIComponent(filename)}`);
       const text = await res.text();
       await navigator.clipboard.writeText(text);
       alert(`Content of ${filename} copied to clipboard!`);
@@ -97,15 +63,6 @@ export default function Home() {
       console.error(err);
       alert("Failed to copy content.");
     }
-  };
-
-  const handleDelete = async () => {
-    if (!confirm("Are you sure you want to delete selected files?")) return;
-    
-    for (const filename of Array.from(selectedFiles)) {
-      await fetch(`/api/files?file=${encodeURIComponent(filename)}`, { method: "DELETE" });
-    }
-    fetchFiles();
   };
 
   const formatSize = (bytes: number) => {
@@ -174,26 +131,13 @@ export default function Home() {
               {hasSelection && (
                 <>
                   <button className="jupyter-btn">Open</button>
-                  <button className="jupyter-btn" onClick={handleDownload}>Download</button>
-                  <button className="jupyter-btn">Rename</button>
-                  <button className="jupyter-btn">Duplicate</button>
-                  <button className="jupyter-btn-danger ml-1" onClick={handleDelete}>Move to Trash</button>
+                  <button className="jupyter-btn" onClick={handleDownload}><Download className="w-4 h-4 mr-1" /> Download</button>
+                  <button className="jupyter-btn" onClick={handleCopyContent} title="Copy contents of file"><FileText className="w-4 h-4 mr-1" /> Copy Content</button>
                 </>
               )}
             </div>
 
             <div className="flex items-center gap-1">
-              <button className="jupyter-btn px-2"><Filter className="w-3.5 h-3.5" /></button>
-              <div className="relative group">
-                <button className="jupyter-btn">New <span className="ml-1 text-[10px]">▼</span></button>
-              </div>
-              <input type="file" className="hidden" ref={fileInputRef} onChange={handleFileUpload} />
-              <button className="jupyter-btn" onClick={() => fileInputRef.current?.click()}>
-                <Upload className="w-3.5 h-3.5 mr-1" /> Upload
-              </button>
-              <button className="jupyter-btn px-2" onClick={fetchFiles}>
-                <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
-              </button>
             </div>
           </div>
 
@@ -252,10 +196,10 @@ export default function Home() {
                   );
                 })}
                 
-                {files.length === 0 && !isLoading && (
+                {files.length === 0 && (
                   <tr>
                     <td colSpan={4} className="py-8 text-center text-gray-500">
-                      The notebook list is empty. Click Upload to add files.
+                      The notebook list is empty.
                     </td>
                   </tr>
                 )}
