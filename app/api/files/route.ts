@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import fs from 'fs/promises';
 import path from 'path';
 
+export const dynamic = 'force-dynamic';
+
 const UPLOAD_DIR = path.join(process.cwd(), 'public', 'files');
 
 async function ensureDir() {
@@ -15,21 +17,23 @@ async function ensureDir() {
 export async function GET() {
   try {
     await ensureDir();
-    const files = await fs.readdir(UPLOAD_DIR);
+    const entries = await fs.readdir(UPLOAD_DIR, { withFileTypes: true });
+    const validEntries = entries.filter((entry) => entry.isFile() && !entry.name.startsWith('.'));
     
     const fileStats = await Promise.all(
-      files.map(async (filename) => {
-        const filePath = path.join(UPLOAD_DIR, filename);
+      validEntries.map(async (entry) => {
+        const filePath = path.join(UPLOAD_DIR, entry.name);
         const stat = await fs.stat(filePath);
         return {
-          name: filename,
+          name: entry.name,
           size: stat.size,
           modified: stat.mtimeMs,
-          type: path.extname(filename),
+          type: path.extname(entry.name),
         };
       })
     );
     
+    fileStats.sort((a, b) => a.name.localeCompare(b.name));
     return NextResponse.json({ files: fileStats });
   } catch (error) {
     console.error(error);

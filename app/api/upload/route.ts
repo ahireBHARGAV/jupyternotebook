@@ -22,10 +22,11 @@ export async function POST(request: Request) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
     
-    const filePath = path.join(UPLOAD_DIR, file.name);
+    const safeName = path.basename(file.name);
+    const filePath = path.join(UPLOAD_DIR, safeName);
     await fs.writeFile(filePath, buffer);
     
-    return NextResponse.json({ success: true, name: file.name });
+    return NextResponse.json({ success: true, name: safeName });
   } catch (error) {
     console.error(error);
     return NextResponse.json({ error: 'Failed to upload file' }, { status: 500 });

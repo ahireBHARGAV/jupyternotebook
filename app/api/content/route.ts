@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import fs from 'fs/promises';
 import path from 'path';
 
+export const dynamic = 'force-dynamic';
+
 const UPLOAD_DIR = path.join(process.cwd(), 'public', 'files');
 
 export async function GET(request: Request) {
@@ -13,7 +15,8 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Filename is required' }, { status: 400 });
     }
     
-    const filePath = path.join(UPLOAD_DIR, filename);
+    const safeName = path.basename(filename);
+    const filePath = path.join(UPLOAD_DIR, safeName);
     const textContent = await fs.readFile(filePath, 'utf-8');
     
     return new NextResponse(textContent, {

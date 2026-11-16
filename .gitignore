@@ -18,5 +18,8 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/
+
 # project specific
 # (uploads and public/files are now tracked)
